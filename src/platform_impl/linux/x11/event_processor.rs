@@ -15,10 +15,13 @@ use util::modifiers::{ModifierKeyState, ModifierKeymap};
 use crate::{
     dpi::{PhysicalPosition, PhysicalSize},
     event::{
-        DeviceEvent, ElementState, Event, KeyboardInput, ModifiersState, TouchPhase, WindowEvent,
+        DeviceEvent, ElementState, Event, ModifiersState, TouchPhase, WindowEvent,
     },
     event_loop::EventLoopWindowTarget as RootELW,
 };
+use crate::event::KeyEvent;
+use crate::keyboard::{KeyLocation, KeyCode};
+use crate::platform_impl::x11::KeyEventExtra;
 
 /// The X11 documentation states: "Keycodes lie in the inclusive range [8,255]".
 const KEYCODE_OFFSET: u8 = 8;
@@ -584,11 +587,14 @@ impl<T: 'static> EventProcessor<T> {
                         window_id,
                         event: WindowEvent::KeyboardInput {
                             device_id,
-                            input: KeyboardInput {
+                            event: KeyEvent {
+                                physical_key: KeyCode::from_scancode(scan_code),
+                                logical_key: virtual_keycode.map(|code| KeyCode::from_scancode(code)),
+                                text: None,
+                                location: KeyLocation::Standard,
                                 state,
-                                scancode,
-                                virtual_keycode,
-                                modifiers,
+                                repeat: false,
+                                platform_specific: KeyEventExtra,
                             },
                             is_synthetic: false,
                         },
